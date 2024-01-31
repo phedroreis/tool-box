@@ -22,10 +22,35 @@ public final class StringTools {
     ***************************************************************************/
     public static String repeatChar(final char c, final int length) {         
         
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < length; i++) s.append(c);
-        return s.toString();
+        StringBuilder sb = new StringBuilder();
         
-    }//repeatChar    
+        for (int i = 0; i < length; i++) sb.append(c);
+        
+        return sb.toString();
+        
+    }//repeatChar 
+    
+    /***************************************************************************
+    * Substitui, em um objeto <b><i>StringBuilder</i></b>, todas as ocorrencias
+    * de uma determinada string por outra.
+    *
+    * @param sb O objeto <b><i>StringBuilder</i></b>.
+    *
+    * @param target A string a ser substituida.
+    * 
+    * @param replacement A string de substituicao.
+    ***************************************************************************/    
+    public static void replace(
+        final StringBuilder sb,
+        final String target, 
+        final String replacement
+    ) {   
+        
+        int p; int length = target.length();
+        
+        while ((p = sb.indexOf(target)) != -1) 
+            sb.replace(p, p + length, replacement); 
+            
+    }//replace
     
 }//classe StringTools

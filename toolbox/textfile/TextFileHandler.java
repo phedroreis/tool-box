@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import toolbox.regex.Regex;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.lang.IllegalStateException;
+import java.lang.IndexOutOfBoundsException;
 
 /*******************************************************************************
 * Uma classe para leitura e edição de arquivos tipo texto de até 2GB.
@@ -23,9 +28,9 @@ import toolbox.regex.Regex;
 * <p>Este conteudo editado pode ser gravado de volta em disco:</p>
 * <ul>
 * <li>{@link #write() Sobrescrevendo o arquivo lido}</li>
-* <li>{@link #write(String) Em um novo arquivo}</li></li>
+* <li>{@link #write(String) Em um novo arquivo}</li>
 * <li>{@link #writeWithExtPrefix(String) Arquivo com mesmo nome, mas
-*     adicionando um prefixo a extensao do arquivo lido}</li></li>
+*     adicionando um prefixo a extensao do arquivo lido}</li>
 * </ul>
 *
 * <p>Embora o objetivo principal do projeto da classe seja fornecer um meio
@@ -70,6 +75,9 @@ public class TextFileHandler {
     //Um mapa que associa blocos do arquivo que nao podem ser editados
     //a marcadores indexados
     private Map<String, String> lock;
+    
+    //Objeto Matcher para localizar regex para o metodo hasNextPattern
+    private Matcher matcher;
     
     /***************************************************************************
     * Obtém somente o caminho do arquivo ou diretorio passado no argumento
@@ -261,17 +269,28 @@ public class TextFileHandler {
         absolutePath = getAbsolutePath(pathname);
      
         this.pathname = pathname;
+        
+        String relative;
+        
+        String current = getAbsolutePath(".");
+        
+        if (absolutePath.contains(current)) {
+            
+            relative = absolutePath.replace(current, "");
+            
+            if (relative.startsWith(File.separator)) 
+                relativePath = relative.substring(1);
+            else
+                relativePath = relative;
+            
+        }
+        else relativePath = absolutePath;
      
-        String relative = absolutePath.replace(getAbsolutePath(","), "");
-     
-        if (relative.startsWith(File.separator)) 
-            relativePath = relative.substring(1);
-        else
-            relativePath = relative;
-    
         filename = getName(pathname);
      
         extension = getExt(filename);
+        
+        matcher = null;
      
         content = null;
      
@@ -608,5 +627,65 @@ public class TextFileHandler {
         return String.format("%s :\n\n%s", pathname, content);
      
     }//toString
+
+    /***************************************************************************
+    * Define uma regex para pesquisa.
+    * 
+    * @param pattern A expressao regular para pesquisa.
+    *
+    * @throws PatternSyntaxException Se a expressao regular for sintaticamente
+    * invalida.
+    ***************************************************************************/
+    public void setPattern(final String pattern) 
+        throws PatternSyntaxException {
+        
+        Pattern p = Pattern.compile(pattern);
+        matcher = p.matcher(content);
+        
+    }//setPattern
+    
+    /***************************************************************************
+    * Retorna <code>true</code> se foi encontrada uma ocorrencia que 
+    * corresponde ao padrao definido pelo metodo
+    * {@link #setPattern(String) setPattern}.
+    * 
+    * @return <code>true</code> se foi encontrada uma ocorrencia que 
+    * corresponde ao padrao definido pelo metodo
+    * {@link #setPattern(String) setPattern}.
+    ***************************************************************************/    
+    public boolean hasNextPattern() {
+        
+        return matcher.find();
+        
+    }//hasNextPattern
+    
+    /***************************************************************************
+    * Retorna uma string correspondendo ao grupo especificado da expressao
+    * regular.
+    * 
+    * @param group O grupo da regex. 0 retorna a correspondencia com a 
+    * totalidade da expressao regular.
+    *
+    * @return O padrao localizado pela ultima chamada do metodo 
+    * {@link #hasNextPattern() hasNextPattern} caso a chamada deste metodo
+    * tenha retornado <code>true</code>, ou somente o grupo contido neste
+    * padrao caso o argumento <b><i>group</i></b> tenha sido passado com valor
+    * diferente de 0. Pode retornar uma string vazia.
+    * 
+    * @throws IllegalStateException Se a ultima chamada de 
+    * {@link #hasNextPattern() hasNextPattern} retornou false ou se 
+    * {@link #hasNextPattern() hasNextPattern} nao foi chamado previamente.
+    * 
+    * @throws IndexOutOfBoundsException Se nao existir grupo referente ao 
+    * indice passado no argumento <b><i>group</i></b>.
+    ***************************************************************************/    
+    public String nextPattern(final int group) 
+        throws
+            IllegalStateException,
+            IndexOutOfBoundsException {
+        
+        return matcher.group(group);
+        
+    }//nextPattern
 
 }//classe TextFileHandler
