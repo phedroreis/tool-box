@@ -556,8 +556,10 @@ public class TextFileHandler {
     ***************************************************************************/
     public void writeWithExtPrefix(final String extensionPrefix)
         throws IOException {
-    
-        write(getFilenameWithExtPrefix(extensionPrefix));
+        
+        String ext = getExt(); 
+
+        write(pathname.replace(ext, extensionPrefix + '.' + ext));
      
     }//writeWithExtPrefix
     
