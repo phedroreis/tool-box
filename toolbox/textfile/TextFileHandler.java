@@ -46,6 +46,12 @@ public class TextFileHandler {
     
     //Caminho e nome do arquivo na forma como foi passado ao construtor
     private final String pathname;
+    
+    //O nome do arquivo com sua extensao
+    private final String filename;
+ 
+    //A extensao do arquivo sem o ponto
+    private final String extension;
  
     //Armazena o conteudo do arquivo que foi lido ou o que foi passado
     //ao metodo setContent()
@@ -57,104 +63,12 @@ public class TextFileHandler {
     //Objeto Scanner para ler a String content
     private Scanner scanner;
  
-    //O caminho absoluto do arquivo sem o nome do arquivo
-    private final String absolutePath;
- 
-    //O caminho relativo ao diretorio corrente sem o nome 
-    //do arquivo. Se o diretorio corrente nao fizer parte
-    //do pathname passado ao construtor, esse campo 
-    //sera igual ao caminho absoluto
-    private final String relativePath;
- 
-    //O nome do arquivo com sua extensao
-    private final String filename;
- 
-    //A extensao do arquivo sem o ponto
-    private final String extension;
- 
     //Um mapa que associa blocos do arquivo que nao podem ser editados
     //a marcadores indexados
     private Map<String, String> lock;
     
     //Objeto Matcher para localizar regex para o metodo hasNextPattern
-    private Matcher matcher;
-    
-    /***************************************************************************
-    * Obtém somente o caminho do arquivo ou diretorio passado no argumento
-    * <b><i>pathname</i></b>. Sem o nome do arquivo ou diretorio.
-    *
-    * <p>O método tenta obter o caminho absoluto, mas se não for possível
-    * retorna o caminho relativo.</p>
-    *
-    * <p>O arquivo ou diretorio nao precisa existir no sistema de arquivos.
-    * Se o argumento passado for um pathname valido, o caminho do arquivo
-    * ou diretorio neste pathname sera retornado.</p>
-    *
-    * @param pathname Caminho de arquivo ou diretório.
-    *
-    * @return O caminho absoluto, se possível. Caso contrario, o caminho
-    * relativo.
-    *
-    * @throws IllegalArgumentException Se <b><i>pathname</i></b> for invalido,
-    * vazio ou null.
-    ***************************************************************************/
-    public static String getAbsolutePath(final String pathname) 
-        throws IllegalArgumentException {
-     
-        if (pathname.isEmpty()) 
-            throw new IllegalArgumentException("Empty pathname");
-     
-        String path;
-     
-        try {
-         
-            path = new File(new File(pathname).getCanonicalPath()).getParent();
-        }
-        catch (NullPointerException e) {
-         
-            throw new IllegalArgumentException("Invalid pathname > " + pathname);
-        }
-        catch (IOException e) {
-         
-            path = new File(pathname).getParent();
-        }
-     
-        if (path == null) 
-            throw new IllegalArgumentException("Invalid pathname > " + pathname);
-     
-        return path;
-     
-    }//getAbsolutePath
-    
-    /***************************************************************************
-    * Obtém somente o caminho do arquivo passado no argumento
-    * <b><i>pathname</i></b> do construtor da classe. Sem o nome do arquivo.
-    *
-    * <p>O método tenta obter o caminho absoluto, mas se não for possível
-    * retorna o caminho relativo.</p>
-    *
-    * @return O caminho absoluto, se possível. Caso constrario, o caminho
-    * relativo.
-    ***************************************************************************/
-    public String getAbsolutePath() {
-     
-        return absolutePath;
-     
-    }//getAbsolutePath
-    
-    /***************************************************************************
-    * Obtém somente o caminho relativo ao diretorio corrente do arquivo passado
-    * no argumento <b><i>pathname</i></b> do construtor da classe. Sem o nome
-    * do arquivo.
-    *
-    * <p>Se o diretorio corrente nao fizer parte de <b><i>pathname</i></b> sera
-    * entao retornado o caminho absoluto.</p>
-    ***************************************************************************/
-    public String getRelativePath() {
-     
-        return relativePath;
-     
-    }//getRelativePath
+    private Matcher matcher;   
     
     /***************************************************************************
     * Obtém o nome do arquivo no argumento <b><i>pathname</i></b>. (Extensao
@@ -266,26 +180,8 @@ public class TextFileHandler {
          
         charset = Charset.forName(charsetName);
      
-        absolutePath = getAbsolutePath(pathname);
-     
         this.pathname = pathname;
         
-        String relative;
-        
-        String current = getAbsolutePath(".");
-        
-        if (absolutePath.contains(current)) {
-            
-            relative = absolutePath.replace(current, "");
-            
-            if (relative.startsWith(File.separator)) 
-                relativePath = relative.substring(1);
-            else
-                relativePath = relative;
-            
-        }
-        else relativePath = absolutePath;
-     
         filename = getName(pathname);
      
         extension = getExt(filename);
@@ -532,13 +428,7 @@ public class TextFileHandler {
     public String getFilenameWithExtPrefix(final String extensionPrefix) {
      
        String ext = getExt(); 
-
-       return (
-           relativePath + 
-           File.separatorChar + filename).replace(ext, extensionPrefix + 
-           '.' + 
-           ext
-       );   
+       return getPathname().replace(ext, extensionPrefix + '.' + ext);  
     
     }//getFilenameWithExtPrefix
     
@@ -557,9 +447,7 @@ public class TextFileHandler {
     public void writeWithExtPrefix(final String extensionPrefix)
         throws IOException {
         
-        String ext = getExt(); 
-
-        write(pathname.replace(ext, extensionPrefix + '.' + ext));
+        write(getFilenameWithExtPrefix(extensionPrefix));
      
     }//writeWithExtPrefix
     
