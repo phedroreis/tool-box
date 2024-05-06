@@ -59,11 +59,11 @@ public final class XmlParser {
                 }
                 catch (NoSuchElementException e) {
                     
-                    throw new XMLParseException("unmatched tags: # -> " + tagMatchedName);                    
+                    throw new XMLParseException("_ -> </" + tagMatchedName + '>');                    
                 }
                 
                 if (!tagMatchedName.equals(tag.getTagName())) 
-                    throw new XMLParseException("unmatched tags: " + tag.getTagName() + " -> " + tagMatchedName);
+                    throw new XMLParseException('<' + tag.getTagName() + "> -> </" + tagMatchedName + '>');
 
                 if (tag.isNotifyClosingRequired()) {
                     

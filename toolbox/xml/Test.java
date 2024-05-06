@@ -10,6 +10,8 @@ import java.util.*;
  */
 public class Test {
     
+    static {toolbox.locale.Localization.setLocale(new Locale("pt", "BR")); }
+    
         
     public static void main(String[] a) throws Exception, java.io.IOException {
         

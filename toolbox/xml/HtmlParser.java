@@ -3,6 +3,7 @@ package toolbox.xml;
 import java.util.HashMap;
 import java.util.LinkedList;
 import javax.management.modelmbean.XMLParseException;
+import java.util.*;
 
 /**
  * Escreva uma descrição da classe ParseXml aqui.
@@ -19,6 +20,25 @@ public final class HtmlParser {
     private final TagParser tagParser;
     
     private LinkedList<Tag> stack;
+    
+    private static String msg$1, msg$2;
+    
+    static {
+        try {
+            ResourceBundle rb = 
+                ResourceBundle.getBundle("toolbox.properties.HtmlParser", toolbox.locale.Localization.getLocale());
+            msg$1 = rb.getString("msg$1");//has no corresponding open tag       
+            msg$2 = rb.getString("msg$2");//do not close
+
+            
+       } catch (NullPointerException | MissingResourceException | ClassCastException e) {
+           
+            // Opcaoes default caso falhe a chamada a rb.getString() [Locale en_US : default]
+            msg$1 = "has no corresponding open tag";        
+            msg$2 = "do not close";
+          
+       }
+    }    
     
     /**
      * 
@@ -58,9 +78,18 @@ public final class HtmlParser {
         
         Tag topTag = stack.peek();
         
-        String topTagName = (topTag == null) ? "#" : topTag.getTagName();
+        String topTagName = (topTag == null) ? msg$1 : (msg$2 + " <" + topTag.getTagName() + '>');
         
-        throw new XMLParseException("unmatched tags: " + topTagName + " -> " + tagMatchedName);
+        throw new XMLParseException("</" + tagMatchedName + "> " + topTagName);
+        
+    }//exception
+    
+    /*
+     * 
+     */
+    private String getName(final Tag tag) {
+        
+        return (tag == null) ? "#" : tag.getTagName();
         
     }
     
@@ -81,7 +110,7 @@ public final class HtmlParser {
             
             topTag = stack.peek();
             
-            String topTagName = (topTag == null) ? "#" : topTag.getTagName();  
+            String topTagName = getName(topTag);  
             
             if (tagMatched.charAt(1) == '/') {
 
@@ -91,14 +120,22 @@ public final class HtmlParser {
                         
                          popStack(tagMatchedPosition);
                          
-                         topTag = stack.peek();
+                         topTag = stack.peek(); topTagName = getName(topTag);
                          
-                         if (topTag == null) exception(tagMatchedName); 
-                         
-                         if (!tagMatchedName.equals(topTag.getTagName())) exception(tagMatchedName); 
+                         if (topTagName == "#") exception(tagMatchedName); 
                          
                     }
-                    else exception(tagMatchedName); 
+                    
+                    if (tagMatchedName.equals("html") && topTagName.equals("body")) {
+                        
+                         popStack(tagMatchedPosition);
+                         
+                         topTag = stack.peek(); topTagName = getName(topTag);
+                         
+                         if (!topTagName.equals("html")) exception(tagMatchedName);
+                    }
+                    
+                    if (!tagMatchedName.equals(topTagName)) exception(tagMatchedName);  
                     
                 }//if  
                  
