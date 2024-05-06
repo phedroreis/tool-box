@@ -1,0 +1,5 @@
+Implementar classe XmlParsing
+
+Traduzir comentarios para Ingles
+
+Criar pacote net

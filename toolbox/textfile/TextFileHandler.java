@@ -11,7 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import toolbox.regex.Regex;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -69,23 +68,6 @@ public class TextFileHandler {
     
     //Objeto Matcher para localizar regex para o metodo hasNextPattern
     private Matcher matcher;   
-    
-    /***************************************************************************
-    * Obtém o nome do arquivo no argumento <b><i>pathname</i></b>. (Extensao
-    * inclusa).
-    *
-    * <p>O mesmo que retornaria o metodo
-    * {@link java.io.File#getName() getName} da classe java.io.File.</p>
-    *
-    * @param pathname O pathname de um arquivo.
-    *
-    * @return O nome do arquivo. Sem o caminho.
-    ***************************************************************************/
-    public static String getName(final String pathname) {
-     
-        return new File(pathname).getName();
-     
-    }//getName
     
     /***************************************************************************
     * Obtém o nome do arquivo no argumento <b><i>pathname</i></b> passado ao
@@ -164,8 +146,6 @@ public class TextFileHandler {
     *
     * @see java.nio.charset.Charset
     *
-    * @throws IllegalArgumentException Se <b><i>pathname</i></b> for invalido,
-    * vazio ou null. Ou <b><i>charsetName</i></b> for <code>null</code>.
     *
     * @throws IllegalCharsetNameException Se <b><i>charsetName</i></b> nao
     * obedecer as regras para nomear charsets.
@@ -174,15 +154,14 @@ public class TextFileHandler {
     * suportado pela JVM.
     ***************************************************************************/
     public TextFileHandler(final String pathname, final String charsetName) 
-        throws IllegalArgumentException, 
-        IllegalCharsetNameException,
-        UnsupportedCharsetException {
+        throws IllegalCharsetNameException,
+            UnsupportedCharsetException {
          
         charset = Charset.forName(charsetName);
      
         this.pathname = pathname;
         
-        filename = getName(pathname);
+        filename = new File(pathname).getName();
      
         extension = getExt(filename);
         
@@ -205,11 +184,8 @@ public class TextFileHandler {
     *
     * <p>O construtor nao checa se o arquivo e realmente do tipo texto.</p>
     *
-    * @throws IllegalArgumentException Se <b><i>pathname</i></b> for invalido,
-    * vazio ou null.
     ***************************************************************************/
-    public TextFileHandler(final String pathname) 
-        throws IllegalArgumentException {
+    public TextFileHandler(final String pathname) {
      
          this(pathname, Charset.defaultCharset().toString());
       
@@ -244,7 +220,7 @@ public class TextFileHandler {
     * O objetivo deste método é bloquear certos padrões de substrings, para
     * que não sejam localizadas e alterados pelo método edit().
     ***************************************************************************/
-    private void lock(final String[] patterns) {
+    private void lock(final String[] patterns) throws PatternSyntaxException {
 
         if (patterns == null) return;
     
@@ -254,7 +230,7 @@ public class TextFileHandler {
         
         for (String pattern : patterns) {
 
-            Regex regex = new Regex(pattern);
+            toolbox.regex.Regex regex = new toolbox.regex.Regex(pattern);
             
             regex.setTarget(content);
             
@@ -264,11 +240,15 @@ public class TextFileHandler {
 
                 lock.put("\u0ca0\u13c8" + countLocks++ + "\u13da\u0ca0", match);
             }
+            
+            StringBuilder sb = new StringBuilder(content);
 
             for (String key : lock.keySet()) {
-
-                content = content.replace(lock.get(key), key);
+                
+                toolbox.string.StringTools.replace(sb, lock.get(key), key); 
             }
+            
+            content = new String(sb);
         }
 
     }//lock
@@ -277,11 +257,15 @@ public class TextFileHandler {
     * Restaura todos os blocos que foram travados para a ediçao
     ***************************************************************************/
     private void restoreLocks() {
+        
+        StringBuilder sb = new StringBuilder(content);
     
         for (String key : lock.keySet()) {
         
-            content = content.replace(key, lock.get(key));
+            toolbox.string.StringTools.replace(sb, lock.get(key), key);
         }
+        
+        content = new String(sb);
         
         lock = null;
     
@@ -306,12 +290,15 @@ public class TextFileHandler {
     * {@link TextFileEditor TextFileEditor}
     * e forneça o método para editar propriamente as substrings localizadas por
     * este método.
+    * 
+    * @throws PatternSyntaxException Caso haja erro de sintaxe no argumento
+    * <b><i>lockPatterns</i></b>.
     ***************************************************************************/
     public void edit(
-        final Regex regex,
+        final toolbox.regex.Regex regex,
         final String[] lockPatterns,
         final TextFileEditor editor
-    ) {
+    ) throws PatternSyntaxException {
      
         if (content == null) return;
      
@@ -329,11 +316,16 @@ public class TextFileHandler {
          
             if (edited != null) map.put(match, edited);
         }
+        
+        StringBuilder sb = new StringBuilder(content);
      
         for (String key : map.keySet()) {
+            
+            toolbox.string.StringTools.replace(sb, key, map.get(key));
          
-            content = content.replace(key, map.get(key));
         }
+        
+        content = new String(sb);
      
         if (lockPatterns != null) restoreLocks();
      
@@ -353,14 +345,17 @@ public class TextFileHandler {
     * @param editor Um objeto de uma classe que estenda
     * toolbox.textfile.TextFileEditor e forneça o método para editar
     * propriamente as substrings localizadas por este método.
+    * 
+    * @throws PatternSyntaxException Caso haja erro de sintaxe no argumento
+    * <b><i>regex</i></b>.
     ***************************************************************************/
     public void edit(
         final String regex,
         final String[] lockPatterns,
         final TextFileEditor editor
-    ) {
+    ) throws PatternSyntaxException{ 
     
-        edit(new Regex(regex), lockPatterns, editor);
+        edit(new toolbox.regex.Regex(regex), lockPatterns, editor);
     
     }//edit
 

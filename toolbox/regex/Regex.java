@@ -16,10 +16,8 @@ public final class Regex {
     
     private final Pattern pattern;
     
-    private Matcher matcher;
-    
-    private static final String ERR_MSG = "Undefined search string.";
-    
+    private Matcher matcher;    
+   
     /***************************************************************************
     * Construtor.
     *
@@ -40,8 +38,10 @@ public final class Regex {
     * Define a String na qual a pesquisa será realizada.
     *
     * @param target A String a ser pesquisada.
+    * 
+    * @throws NullPointerException Se <b><i>target</i></b> for <code>null</code>.
     ***************************************************************************/
-    public void setTarget(final String target) {        
+    public void setTarget(final String target) throws NullPointerException {        
    
         matcher = pattern.matcher(target);  
         
@@ -62,21 +62,10 @@ public final class Regex {
     * @return A próxima substring localizada, ou <code>null</code> se não houver
     * mais substrings para localizar.
     *
-    * @throws NullPointerException Se a string onde pesquisar nao foi ainda
-    * definida pelo metodo {@link #setTarget(String) setTarget}
     ***************************************************************************/
-    public String find() throws NullPointerException {
+    public String find() {
         
-        try {
-        
-            if (matcher.find()) return matcher.group(); else return null;
-        
-        }
-        catch (NullPointerException e) {
-            
-            throw new NullPointerException(ERR_MSG);
-            
-        }       
+        if (matcher.find()) return matcher.group(); else return null;    
         
     }//find()
     
@@ -89,6 +78,7 @@ public final class Regex {
     * foi econtrada correspondência para este grupo, se nenhum "match" foi
     * tentado ainda, se o indice do grupo nao corresponde a um grupo existente
     * na regex ou se o match tentado previamente retornou <code>false</code>.
+    * 
     ***************************************************************************/
     public String group(final int group) {
         
@@ -98,7 +88,7 @@ public final class Regex {
             
             s = matcher.group(group);
         }
-        catch (Exception e) {
+        catch (IndexOutOfBoundsException | IllegalStateException e) {
             
             return null;
         }
@@ -106,5 +96,19 @@ public final class Regex {
         return s;
         
     }//group
+    
+    /**
+     * Retorna o indice do match previo.
+     * 
+     * @return O indice do ultimo match.
+     * 
+     * @throws IllegalStateException Se nenhum match foi tentado ainda ou se a ultima execucao do 
+     * metodo {@link find() find()} retornou <code>false</code>. 
+     */
+    public int start() throws IllegalStateException {
+        
+        return matcher.start();
+        
+    }//start
     
 }//classe Regex

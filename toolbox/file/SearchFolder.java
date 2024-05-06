@@ -50,10 +50,7 @@ public final class SearchFolder {
     *
     * @return Um array com os pathnames absolutos dos arquivos.
     ***************************************************************************/
-    public String[] getPathnamesList(
-        final String regex, 
-        final boolean searchDirs
-    ) {
+    public String[] getPathnamesList(final String regex, final boolean searchDirs) {
         
         fileFilterRegex = regex;
         

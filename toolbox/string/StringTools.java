@@ -1,5 +1,7 @@
 package toolbox.string;
 
+import java.util.Arrays;
+
 /*******************************************************************************
 * Métodos estáticos para manipulação de strings.
 *
@@ -22,11 +24,11 @@ public final class StringTools {
     ***************************************************************************/
     public static String repeatChar(final char c, final int length) {         
         
-        StringBuilder sb = new StringBuilder();
+        char[] ch = new char[length];
         
-        for (int i = 0; i < length; i++) sb.append(c);
+        Arrays.fill(ch, c);
         
-        return sb.toString();
+        return new String(ch);       
         
     }//repeatChar 
     

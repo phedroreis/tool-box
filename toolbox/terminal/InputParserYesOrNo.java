@@ -1,4 +1,8 @@
 package toolbox.terminal;
+
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+
 /*******************************************************************************
 * Estende a classe {@link InputParser InputParser} para
 * criar um validador de entradas do tipo Sim ou Nao.
@@ -11,6 +15,27 @@ package toolbox.terminal;
 * @see toolbox.terminal.InputParser
 *******************************************************************************/
 public class InputParserYesOrNo extends InputParser{
+    
+    private static String msg$1;
+    private static String msg$2;
+    private static String msg$3;
+    
+    static {
+        try {
+            ResourceBundle rb = 
+                ResourceBundle.getBundle("toolbox.properties.InputParserYesOrNo", toolbox.locale.Localization.getLocale());
+            msg$1 = rb.getString("msg$1"); 
+            msg$2 = rb.getString("msg$2");
+            msg$3 = rb.getString("msg$3");
+            
+        } catch (NullPointerException | MissingResourceException | ClassCastException e) {
+            
+            msg$1 = "y";        
+            msg$2 = "n";
+            msg$3 = "Invalid input!"; 
+        }
+    }
+   
     /***************************************************************************
     * Valida a entrada apenas se o usuario entrou com Sim
     * ou Nao.
@@ -18,13 +43,10 @@ public class InputParserYesOrNo extends InputParser{
     * <p>Exemplos de entradas validas:</p>
     *
     * <ul>
-    * <li>Sim</li>
-    * <li>Nao</li>
+    * <li>S</li>
+    * <li>N</li>
     * <li>n</li>
-    * <li>sim</li>
-    * <li>siM</li>
-    * <li>NÃO</li>
-    * <li>SIM</li>
+    * <li>s</li>
     * </ul>
     *
     * @param input Passa a entrada que o usuario digitou no prompt
@@ -45,20 +67,12 @@ public class InputParserYesOrNo extends InputParser{
     public String parse(final String input) 
         throws IllegalArgumentException {
         
-        String parsedInput = input;
+        String parsedInput = input.toLowerCase();
         
-        switch (parsedInput.toLowerCase()) {
-            case "s":
-            case "sim":
-                return "s";
-            case "n":
-            case "n\u00e3o":
-            case "nao":
-                return "n";
-            default:
-                throw new IllegalArgumentException("Entrada inv\u00e1lida!");
-        }
-           
+        if (parsedInput.equals(msg$1) || parsedInput.equals(msg$2)) return parsedInput;
+             
+        throw new IllegalArgumentException(msg$3);
+   
     }//parse
     
 }//classe InputParserYesOrNo

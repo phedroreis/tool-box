@@ -1,5 +1,8 @@
 package toolbox.terminal;
 
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+
 /*******************************************************************************
 * Implementa uma barra de progresso simples no terminal.
 *
@@ -20,6 +23,26 @@ public final class ProgressBar {
     private final int barLength;
     private final int stepsPerDot;
     private int countSteps;
+    private static String exceptionMsg$1;
+    private static String exceptionMsg$2;
+    private static String exceptionMsg$3;
+    
+    static {
+        try {
+            ResourceBundle rb = 
+                ResourceBundle.getBundle("toolbox.properties.ProgressBar", toolbox.locale.Localization.getLocale());
+            exceptionMsg$1 = rb.getString("exception_msg$1");
+            exceptionMsg$2 = rb.getString("exception_msg$2");
+            exceptionMsg$3 = rb.getString("exception_msg$3");
+        
+        } catch (NullPointerException | MissingResourceException | ClassCastException e) {
+            
+            exceptionMsg$1 = "The process must have at least one step";
+            exceptionMsg$2 = "Bar length < 1";
+            exceptionMsg$3 = "Step's overflow";            
+
+        } 
+    }
     
     /***************************************************************************
     * Construtor.
@@ -31,13 +54,13 @@ public final class ProgressBar {
     *
     * <p>Esta largura poderá ser ajustada para um tamanho menor</p>
     *
-    * @throws IllegalArgumentException Se o total passado for menor que 1.
+    * @throws IllegalArgumentException Se <b><i>total</i></b> menor que 1 ou 
+    * <b><i>barLength</i></b> menor que 1.
     ***************************************************************************/
-    public ProgressBar(final int total, int barLength) 
-        throws IllegalArgumentException {
+    public ProgressBar(final int total, int barLength) throws IllegalArgumentException {
         
-        if (total < 1) 
-            throw new IllegalArgumentException("Largura da barra < 1");
+        if (total < 1) throw new IllegalArgumentException(exceptionMsg$1);
+        if (barLength < 1) throw new IllegalArgumentException(exceptionMsg$2);
         
         barLength++;
         
@@ -45,10 +68,7 @@ public final class ProgressBar {
 
         do {
 
-        } while (
-            (total % --barLength) >= 
-            (steps = total / barLength)
-        ); 
+        } while ((total % --barLength) >= (steps = total / barLength)); 
         
         this.total = total;
         this.barLength = barLength;
@@ -62,16 +82,21 @@ public final class ProgressBar {
     ***************************************************************************/
     public void showBar() {
         
-        System.out.print("\n0%|" + " ".repeat(barLength) + "|100%\n   ");
+        System.out.printf("%n0%%|%s|100%%%n   ", " ".repeat(barLength));
         
     }//showBar
     
     /***************************************************************************
     * Deve ser chamado a cada passo executado do processo.
+    * 
+    * @throws IndexOutOfBoundsException se este metodo for chamado mais vezes que
+    * o total de passos passado como argumento no construtor da classe. 
     ***************************************************************************/
-    public void increment() {
+    public void increment() throws IndexOutOfBoundsException {
         
-        if (++countSteps % stepsPerDot == 0) System.out.print(".");  
+        if (++countSteps > total) throw new IndexOutOfBoundsException(exceptionMsg$3);
+        
+        if (countSteps % stepsPerDot == 0) System.out.print(".");  
         
     }//increment
     

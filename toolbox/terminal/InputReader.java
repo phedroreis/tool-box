@@ -1,10 +1,12 @@
 package toolbox.terminal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.util.Scanner;
+import java.io.PrintWriter;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 
 /*******************************************************************************
 * Classe responsável por processar entradas de usuário pelo terminal.
@@ -20,12 +22,42 @@ import java.io.UnsupportedEncodingException;
 *******************************************************************************/
 public final class InputReader {
     
-private String label;
-private String enterOptionLabel;
-private String defaultOption;
-private InputParser parser;
-private final BufferedReader inputReader;
-private final PrintStream console;
+    private String label;
+    private String enterOptionLabel;
+    private String defaultOption;
+    private InputParser parser;
+    private final Scanner inputReader;
+    private final PrintWriter console;
+    private static String msg$1;
+    private static String msg$2;
+    private static String msg$3;
+    private static String msg$4;
+    private static String msg$5;
+    private static String msg$6;
+    
+    static {
+        try {
+            
+            ResourceBundle rb = 
+                ResourceBundle.getBundle("toolbox.properties.InputReader", toolbox.locale.Localization.getLocale());
+            msg$1 = rb.getString("msg$1");
+            msg$2 = rb.getString("msg$2");
+            msg$3 = rb.getString("msg$3");
+            msg$4 = rb.getString("msg$4");
+            msg$5 = rb.getString("msg$5");
+            msg$6 = rb.getString("msg$6");  
+        
+        } catch (NullPointerException | MissingResourceException | ClassCastException e) {
+            
+            msg$1 = "Charset for inputs:";
+            msg$2 = " (Y/n)";
+            msg$3 = "Y/y";
+            msg$4 = "y";
+            msg$5 = "No";
+            msg$6 = "N/n";   
+        }    
+    }
+
 
     /***************************************************************************
     * Construtor.
@@ -43,19 +75,22 @@ private final PrintStream console;
     *<li>utf8
     *</ul>
     *
-    * @throws UnsupportedEncodingException Se o código do charset nao
-    * corresponder a um dos listados acima ou se a instancia da JVM
-    * executando nao suportar o charset passado como argumento.
+    * @throws IllegalArgumentException Se o charset for <code>null</code>.
+    * 
+    * @throws IllegalCharsetNameException Se o nome do charset nao obedecer as 
+    * regras para nomeacao de charsets.
+    * 
+    * @throws UnsupportedCharsetException Se o charset nao for suportado pela JVM
+    * em execucao.
     ***************************************************************************/
     public InputReader(final String charset) 
-        throws UnsupportedEncodingException {
+        throws IllegalArgumentException, IllegalCharsetNameException, UnsupportedCharsetException {
         
-        console = new PrintStream(System.out, true, charset);
+        console = new PrintWriter(System.out, true, Charset.forName(charset));
         
-        console.println("\nLendo entradas em " + charset);
+        console.printf("%n%s %s%n", msg$1, charset);
         
-        inputReader = 
-            new BufferedReader(new InputStreamReader(System.in, charset));
+        inputReader = new Scanner(System.in, charset);
        
     }//construtor
 
@@ -92,7 +127,7 @@ private final PrintStream console;
     * Para quando o prompt for exibir uma opçao de escolha do tipo sim ou
     * nao.
     *
-    * @param label Uma string indicando ao usuario que dado entrar.
+    * @param label Uma pergunta que so possa ser respondida com sim ou nao.
     *
     * @param isYesDefaultOption Se sim for a opçao default.
     ***************************************************************************/
@@ -101,17 +136,17 @@ private final PrintStream console;
         final boolean isYesDefaultOption
     ){
         
-        this.label = label + "? (S/n)";
+        this.label = label + msg$2;
         
         if (isYesDefaultOption) {
             
-            enterOptionLabel = "Sim";
-            defaultOption = "s";
+            enterOptionLabel = msg$3;
+            defaultOption = msg$4;
         }
         else {
             
-            enterOptionLabel = "N\u00e3o";
-            defaultOption = "n";       
+            enterOptionLabel = msg$5;
+            defaultOption = msg$6;       
         }
         this.parser = new InputParserYesOrNo();      
       
@@ -133,12 +168,12 @@ private final PrintStream console;
         do {
             err = false;
             
-            console.println('\n' + label + ':');
-            console.print("[ENTER = " + enterOptionLabel + "] >");
+            console.printf("%n%s:%n", label);
+            console.printf("[ENTER = %s] >", enterOptionLabel);
             
             try {           
           
-                input = inputReader.readLine(); 
+                input = inputReader.nextLine(); 
                 
                 if (input.isBlank()) return defaultOption;
                 
@@ -146,19 +181,14 @@ private final PrintStream console;
             }
             catch (IllegalArgumentException e) {
                 
-                console.println('\n' + e.getMessage());
+                console.printf("%n%s%n", e.getMessage());
                 err = true;             
-            }
-            catch (IOException e) {
-                
-                System.err.println('\n' + e.getMessage());
-                System.exit(1);
             }
             
         } while (err);
         
         return input;
         
-    }//readInput   
+    }//readInput 
     
 }//classe InputReader

@@ -33,8 +33,10 @@ public final class TransferArea implements Transferable {
     * @param plainText O texto.
     *
     * @param html O codigo HTML.
+    * 
+    * @throws IllegalStateException Se a area de transferencia nao estiver disponivel.
     ***************************************************************************/
-    public static void setContents(final String plainText, final String html) {
+    public static void setContents(final String plainText, final String html) throws IllegalStateException {
         
         CLIPBOARD.setContents(new TransferArea(plainText, html), null);
         
@@ -48,11 +50,14 @@ public final class TransferArea implements Transferable {
     * @throws IOException Em caso de erro de IO.
     *
     * @throws UnsupportedFlavorException Se nao houver codigo HTML no clipboard.
-    ***************************************************************************/
+    * 
+    * @throws IllegalStateException Se a area de transferencia nao estiver disponivel.
+    ****************************************************************************/
     public static String getHtml() 
         throws 
             IOException, 
-            UnsupportedFlavorException {
+            UnsupportedFlavorException,
+            IllegalStateException {
         
         return CLIPBOARD.getData(DataFlavor.allHtmlFlavor).toString();
         
@@ -64,11 +69,14 @@ public final class TransferArea implements Transferable {
     * @throws IOException Em caso de erro de IO.
     *
     * @throws UnsupportedFlavorException Se nao houver texto no clipboard.
+    * 
+    * @throws IllegalStateException Se a area de transferencia nao estiver disponivel.
     ***************************************************************************/
     public static String getPlainText() 
         throws 
             IOException, 
-            UnsupportedFlavorException {
+            UnsupportedFlavorException,
+            IllegalStateException {
         
         return CLIPBOARD.getData(DataFlavor.stringFlavor).toString();
         
