@@ -2,8 +2,9 @@ package toolbox.xml;
   
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import javax.management.modelmbean.XMLParseException;
-import java.util.*;
 
 /**
  * Escreva uma descrição da classe ParseXml aqui.
@@ -59,13 +60,14 @@ public final class HtmlParser {
     /*
      * 
      */
-    private void popStack(final int endContentIndex) {
+    private void popStack(final int endContentIndex, final int endBlockIndex) {
         
         Tag tag = stack.pop();
         
         if (tag.isNotifyClosingRequired()) {
             
             tag.setContent(htmlContent.substring(tag.getStartContentIndex(), endContentIndex));
+            tag.setEndBlockIndex(endBlockIndex);
             tagParser.closeTag(tag);  
             
         }        
@@ -87,8 +89,9 @@ public final class HtmlParser {
     /*
      * 
      */
-    private String getName(final Tag tag) {
+    private String getTopTagName() {
         
+        Tag tag = stack.peek();
         return (tag == null) ? "#" : tag.getTagName();
         
     }
@@ -107,10 +110,8 @@ public final class HtmlParser {
             String tagMatchedName = tagRegex.group(1).toLowerCase();
             
             int tagMatchedPosition = tagRegex.start();
-            
-            topTag = stack.peek();
-            
-            String topTagName = getName(topTag);  
+           
+            String topTagName = getTopTagName();  
             
             if (tagMatched.charAt(1) == '/') {
 
@@ -118,9 +119,9 @@ public final class HtmlParser {
                 
                     if (topTagName.equals("li") || topTagName.equals("p")) {
                         
-                         popStack(tagMatchedPosition);
+                         popStack(tagMatchedPosition, tagMatchedPosition + tagMatched.length());
                          
-                         topTag = stack.peek(); topTagName = getName(topTag);
+                         topTagName = getTopTagName();
                          
                          if (topTagName == "#") exception(tagMatchedName); 
                          
@@ -128,9 +129,9 @@ public final class HtmlParser {
                     
                     if (tagMatchedName.equals("html") && topTagName.equals("body")) {
                         
-                         popStack(tagMatchedPosition);
+                         popStack(tagMatchedPosition, tagMatchedPosition + tagMatched.length());
                          
-                         topTag = stack.peek(); topTagName = getName(topTag);
+                         topTagName = getTopTagName();
                          
                          if (!topTagName.equals("html")) exception(tagMatchedName);
                     }
@@ -139,11 +140,11 @@ public final class HtmlParser {
                     
                 }//if  
                  
-                popStack(tagMatchedPosition);
+                popStack(tagMatchedPosition, tagMatchedPosition + tagMatched.length());
               
             } else {
                
-                Tag tag = new Tag(tagMatchedName, tagRegex.group(2), tagMatchedPosition + tagMatched.length());
+                Tag tag = new Tag(tagMatchedName, tagRegex.group(2), tagMatchedPosition, tagMatchedPosition + tagMatched.length());
                 
                 switch (tagMatchedName) {
                     //self-closing tags
@@ -169,14 +170,14 @@ public final class HtmlParser {
                     
                     //<body> fecha <head> se estiver aberta                  
                     case "body":
-                        if (topTagName.equals("head")) popStack(tagMatchedPosition);//fecha com <                        
+                        if (topTagName.equals("head")) popStack(tagMatchedPosition, tagMatchedPosition + tagMatched.length());//fecha com <                        
                         stack.push(tag);
                         break;
                     
                     //<li> e <p> fecham <li> e <p> (respecitvamente) se estiverem abertas    
                     case "li":
                     case "p":    
-                        if (topTagName.equals(tagMatchedName)) popStack(tagMatchedPosition);
+                        if (topTagName.equals(tagMatchedName)) popStack(tagMatchedPosition, tagMatchedPosition + tagMatched.length());
                         stack.push(tag);
                         break;
                     
@@ -194,7 +195,7 @@ public final class HtmlParser {
         
         while ( (topTag = stack.peek()) != null) {
             
-            popStack(htmlContent.length());
+            popStack(htmlContent.length(), htmlContent.length());
             
         }
         

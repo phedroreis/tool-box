@@ -67,14 +67,15 @@ public final class XmlParser {
 
                 if (tag.isNotifyClosingRequired()) {
                     
-                    tag.setContent(xmlContent.substring(tag.getStartContentIndex(), tagMatchedPosition));  
+                    tag.setContent(xmlContent.substring(tag.getStartContentIndex(), tagMatchedPosition));
+                    tag.setEndBlockIndex(tagMatchedPosition + tagMatched.length());
                     tagParser.closeTag(tag);
                   
                 }                      
                
             } else {
                 
-                  tag = new Tag(tagMatchedName, tagRegex.group(2), tagMatchedPosition + tagMatched.length());
+                  tag = new Tag(tagMatchedName, tagRegex.group(2), tagMatchedPosition, tagMatchedPosition + tagMatched.length());
                 
                   if (!tagMatched.endsWith("/>")) stack.push(tag);
                 

@@ -20,6 +20,10 @@ public final class Tag {
     
     private String content;
     
+    private final int startBlockIndex;
+    
+    private int endBlockIndex;
+    
     private final int startContentIndex;
     
     private boolean notifyClosing;
@@ -34,16 +38,24 @@ public final class Tag {
      * @param startContentIndex A posicao no arquivo do primeiro caractere do escopo da tag.
      * Sem efeito para tags self-closing.
      */
-    protected Tag(final String tagName, final String tagAttrs, final int startContentIndex) {
+    protected Tag(final String tagName, final String tagAttrs, final int startBlockIndex, final int startContentIndex) {
+        
+        this.tagName = tagName;        
+
+        attrMap = getAttrMap(tagAttrs);
+        
+        this.startBlockIndex = startBlockIndex;
         
         this.startContentIndex = startContentIndex;
-        attrMap = getAttrMap(tagAttrs);
-        this.tagName = tagName;
+        
         notifyClosing = false;
+        
         content = null;
         
+        endBlockIndex = -1;
+        
     }
-    
+     
     /*
      * Retorna um mapa com os pares chave/valor de todos os atributos da tag.
      */
@@ -76,6 +88,42 @@ public final class Tag {
         return startContentIndex;
         
     }//getStartContentIndex
+     
+    /**
+     * 
+     */
+    public int getCloseTagIndex() {
+        
+        if (content == null) return -1;
+        
+        return startContentIndex + content.length();
+    }
+    
+    /**
+     * 
+     */
+    protected void setEndBlockIndex(final int endBlockIndex) {
+        
+        this.endBlockIndex = endBlockIndex;
+        
+    }
+    
+    /**
+     * 
+     */
+    public int getStartBlockIndex() {
+        
+        return startBlockIndex;
+    }    
+    
+    /**
+     * 
+     */
+    public int getEndBlockIndex() {
+        
+        return endBlockIndex;
+        
+    }    
     
     /**
      * Retorna o mapa com os pares chaves/valor dos atributos da tag.
