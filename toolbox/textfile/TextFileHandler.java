@@ -509,7 +509,7 @@ public class TextFileHandler {
     @Override
     public String toString() {
      
-        return String.format("%s :\n\n%s", pathname, content);
+        return String.format("%s :%n%n%s", pathname, content);
      
     }//toString
 

@@ -96,11 +96,11 @@ public final class Log {
         
         if (isSet()) {
            
-            if (indentActive) { 
-               logStream.print(indentString);
-               indentActive = false;
-            }    
+            if (indentActive) logStream.print(indentString);
+   
             logStream.printf(format, msg);
+            
+            indentActive = (format.length() == 4); // format == "%s%n" imprimiu com quebra de linha
         }
         
     }//printf
@@ -125,7 +125,6 @@ public final class Log {
     public static void println(final String msg) {        
         
         printf("%s%n", msg);
-        indentActive = true;
         
     }//println
     
@@ -202,6 +201,9 @@ public final class Log {
      * <p>Para que esse metodo possa ser executado corretamente, e necessario que o metodo {@link exec(String, String, String) exec} tenha sido
      * chamado previamente durante a execucao deste mesmo metodo.</p>
      * 
+     * <p>Se o metodo onde ret e chamado declara alguma excecao, entao a chamada de ret deve ser inserida em um bloco <code>finally</code>
+     * associado a um bloco <code>try</code> englobando o escopo de codigo do metodo.</p>
+     * 
      * @param pack O pacote da classe que contem o metodo. Deve ser identico a valor passado no argumento pack do metodo exec correspondente.
      * @param clas A classe do metodo. Deve ser identico a valor passado no argumento clas do metodo exec correspondente.
      * @param meth O nome do metodo.Deve ser identico a valor passado no argumento meth do metodo exec correspondente.
@@ -243,7 +245,8 @@ public final class Log {
      */
     public static void ret(final String pack, final String clas, final String meth, final Object returnValue) throws IllegalStateException {
 
-        String s = returnValue.toString().replace("\n", "\n" + indentString);
+        String s = 
+            returnValue.toString().replace(toolbox.string.StringTools.NEWLINE, toolbox.string.StringTools.NEWLINE + indentString);
         println("@return : " + s);
         
         ret(pack, clas, meth);
@@ -277,11 +280,11 @@ public final class Log {
         <code>
         
     --> toolbox.log.Test: method
-    |	@param1 : 1
-    |	@param2 : 2
-    |	method executando
-    |	@return : Essa String sera retornada.
-    |	retorno
+    |    @param1 : 1
+    |    @param2 : 2
+    |    method executando
+    |    @return : Essa String sera retornada.
+    |    retorno
     <-- toolbox.log.Test: method
     
       </pre>
@@ -296,7 +299,8 @@ public final class Log {
         
         for (Object param : params) {
             
-            String s = param.toString().replace("\n", "\n" + indentString);
+            String s = 
+                param.toString().replace(toolbox.string.StringTools.NEWLINE, toolbox.string.StringTools.NEWLINE + indentString);
             println("@param" + (++n) + " : " + s);
         }
         
@@ -326,6 +330,9 @@ public final class Log {
      * <p>Quando este metodo for chamado, sera gravado  um registro com a data e hora correntes no arquivo de log</p>
      * 
      * <p>Por padrao, os registros serao gravados com o enconding UTF8. Se o sistema nao suportar UTF8, sera usado o enconding padrao do sistema.</p>
+     * 
+     * <p>Este metodo deve ser chamado de um bloco de inicializacao <code>static</code> na classe principal do programa. Antes da
+     * execucao do metodo main.</p>
      * 
      * @param pathname O pathname do arquivo de log.
      * 

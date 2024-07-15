@@ -67,7 +67,7 @@ public final class Localization {
      * Define o Locale global que deve ser usado em todo o programa. 
      * 
      * <p>So deve ser executado uma unica vez e na inicializacao da classe que
-     * contem o metodo main(). Em um bloco static na inicializacao desta classe,
+     * contem o metodo main(). Em um bloco <code>static</code> na inicializacao desta classe,
      * sendo o primeiro codigo a ser executado pelo programa.</p>
      * 
      * <p>Se nao for executado, chamadas subsequentes ao metodo getLocale() desta 
